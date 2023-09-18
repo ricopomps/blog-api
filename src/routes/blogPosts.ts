@@ -5,6 +5,8 @@ import { featuredImageUpload } from "../middlewares/image-upload";
 const router = express.Router();
 
 router.get("/", BlogPostsController.getBlogPosts);
+router.get("/slugs", BlogPostsController.getAllBlogPostsSlugs);
+router.get("/post/:slug", BlogPostsController.getBlogPostBySlug);
 router.post(
   "/",
   featuredImageUpload.single("featuredImage"),

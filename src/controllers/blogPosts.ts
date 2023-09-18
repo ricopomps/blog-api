@@ -56,3 +56,27 @@ export const createBlogPost: RequestHandler<
     next(error);
   }
 };
+
+export const getBlogPostBySlug: RequestHandler = async (req, res, next) => {
+  try {
+    const blogPost = await BlogPostModel.findOne({
+      slug: req.params.slug,
+    }).exec();
+
+    if (!blogPost) res.sendStatus(404);
+
+    res.status(200).json(blogPost);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAllBlogPostsSlugs: RequestHandler = async (req, res, next) => {
+  try {
+    const results = await BlogPostModel.find().select("slug").exec();
+    const slugs = results.map((post) => post.slug);
+    res.status(200).json(slugs);
+  } catch (error) {
+    next(error);
+  }
+};
