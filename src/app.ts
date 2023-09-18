@@ -17,6 +17,8 @@ app.use(
   })
 );
 
+app.use("/uploads/featured-images", express.static("uploads/featured-images"));
+
 app.use("/posts", blogPostRoutes);
 
 export default app;
