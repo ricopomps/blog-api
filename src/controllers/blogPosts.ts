@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import sharp from "sharp";
 import env from "../env";
 import createHttpError from "http-errors";
+import { BlogPostBody } from "../validation/blogPosts";
 
 export const getBlogPosts: RequestHandler = async (req, res, next) => {
   try {
@@ -18,13 +19,6 @@ export const getBlogPosts: RequestHandler = async (req, res, next) => {
     next(error);
   }
 };
-
-interface BlogPostBody {
-  slug: string;
-  title: string;
-  summary: string;
-  body: string;
-}
 
 export const createBlogPost: RequestHandler<
   unknown,
