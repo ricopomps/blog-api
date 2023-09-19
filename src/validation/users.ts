@@ -1,4 +1,5 @@
 import * as yup from "yup";
+import { imageFileSchema } from "../utils/validations";
 
 const usernameSchema = yup
   .string()
@@ -15,6 +16,10 @@ const passwordSchema = yup
   .matches(/^(?!.* )/, "Must not contain any whitespaces")
   .min(6, "Must be at least 6 characters long");
 
+const displayNameSchema = yup.string().max(20);
+
+const aboutSchema = yup.string().max(160);
+
 export const signUpSchema = yup.object({
   body: yup.object({
     username: usernameSchema.required(),
@@ -24,3 +29,14 @@ export const signUpSchema = yup.object({
 });
 
 export type SignUpBody = yup.InferType<typeof signUpSchema>["body"];
+
+export const updateUserSchema = yup.object({
+  body: yup.object({
+    username: usernameSchema,
+    displayName: displayNameSchema,
+    about: aboutSchema,
+  }),
+  file: imageFileSchema,
+});
+
+export type UpdateUserBody = yup.InferType<typeof updateUserSchema>["body"];

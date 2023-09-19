@@ -1,5 +1,15 @@
 import * as yup from "yup";
-import { imageFileSchema } from "../utils/validations";
+import { imageFileSchema, objectIdSchema } from "../utils/validations";
+
+export const getBlogPostSchema = yup.object({
+  query: yup.object({
+    authorId: objectIdSchema,
+  }),
+});
+
+export type GetBlogPostsQuery = yup.InferType<
+  typeof getBlogPostSchema
+>["query"];
 
 const blogPostBodySchema = yup.object({
   title: yup.string().required().max(100),

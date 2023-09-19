@@ -5,11 +5,20 @@ import mongoose from "mongoose";
 import sharp from "sharp";
 import env from "../env";
 import createHttpError from "http-errors";
-import { BlogPostBody } from "../validation/blogPosts";
+import { BlogPostBody, GetBlogPostsQuery } from "../validation/blogPosts";
 
-export const getBlogPosts: RequestHandler = async (req, res, next) => {
+export const getBlogPosts: RequestHandler<
+  unknown,
+  unknown,
+  unknown,
+  GetBlogPostsQuery
+> = async (req, res, next) => {
+  const authorId = req.query.authorId;
+
+  const filter = authorId ? { author: authorId } : {};
+
   try {
-    const allBlogPosts = await BlogPostModel.find()
+    const allBlogPosts = await BlogPostModel.find(filter)
       .sort({ _id: -1 })
       .populate("author")
       .exec();
