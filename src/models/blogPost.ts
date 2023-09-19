@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, model } from "mongoose";
+import mongoose, { InferSchemaType, Schema, model } from "mongoose";
 
 const blogPostSchema = new Schema(
   {
@@ -7,6 +7,11 @@ const blogPostSchema = new Schema(
     summary: { type: String, required: true },
     body: { type: String, required: true },
     featuredImageUrl: { type: String, required: true },
+    author: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );

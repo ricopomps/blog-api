@@ -1,6 +1,7 @@
 import express from "express";
 import * as BlogPostsController from "../controllers/blogPosts";
 import { featuredImageUpload } from "../middlewares/image-upload";
+import requiresAuth from "../middlewares/requiresAuth";
 
 const router = express.Router();
 
@@ -9,6 +10,7 @@ router.get("/slugs", BlogPostsController.getAllBlogPostsSlugs);
 router.get("/post/:slug", BlogPostsController.getBlogPostBySlug);
 router.post(
   "/",
+  requiresAuth,
   featuredImageUpload.single("featuredImage"),
   BlogPostsController.createBlogPost
 );

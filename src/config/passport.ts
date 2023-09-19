@@ -19,14 +19,14 @@ passport.use(
         .select("+email +password")
         .exec();
 
-      if (!existingUser || !existingUser.password) return cb(null, false);
+      if (!existingUser || !existingUser.password) return cb(null, false); //change passport js to send the message
 
       const passwordMatch = await bcrypt.compare(
         password,
         existingUser.password
       );
 
-      if (!passwordMatch) return cb(null, false);
+      if (!passwordMatch) return cb(null, false); //change passport js to send the message
 
       const user = existingUser.toObject();
       delete user.password;

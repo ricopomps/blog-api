@@ -8,7 +8,10 @@ import createHttpError from "http-errors";
 
 export const getBlogPosts: RequestHandler = async (req, res, next) => {
   try {
-    const allBlogPosts = await BlogPostModel.find().sort({ _id: -1 }).exec();
+    const allBlogPosts = await BlogPostModel.find()
+      .sort({ _id: -1 })
+      .populate("author")
+      .exec();
 
     res.status(200).json(allBlogPosts);
   } catch (error) {
@@ -31,9 +34,10 @@ export const createBlogPost: RequestHandler<
 > = async (req, res, next) => {
   const { body, slug, summary, title } = req.body;
   const featuredImage = req.file;
-
+  const authenticatedUser = req.user;
   try {
     assertIsDefined(featuredImage);
+    assertIsDefined(authenticatedUser);
 
     const existingSlug = await BlogPostModel.findOne({ slug }).exec();
 
@@ -58,6 +62,7 @@ export const createBlogPost: RequestHandler<
       summary,
       title,
       featuredImageUrl: `${env.SERVER_URL}${featuredImageDestinationPath}`,
+      author: authenticatedUser._id,
     });
 
     res.status(200).json(newPost);
@@ -70,7 +75,9 @@ export const getBlogPostBySlug: RequestHandler = async (req, res, next) => {
   try {
     const blogPost = await BlogPostModel.findOne({
       slug: req.params.slug,
-    }).exec();
+    })
+      .populate("author")
+      .exec();
 
     if (!blogPost)
       throw createHttpError(404, "No blog post found for this slug");
