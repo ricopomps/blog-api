@@ -4,6 +4,7 @@ import assertIsDefined from "../utils/assertIsDefined";
 import mongoose from "mongoose";
 import sharp from "sharp";
 import env from "../env";
+import createHttpError from "http-errors";
 
 export const getBlogPosts: RequestHandler = async (req, res, next) => {
   try {
@@ -34,6 +35,14 @@ export const createBlogPost: RequestHandler<
   try {
     assertIsDefined(featuredImage);
 
+    const existingSlug = await BlogPostModel.findOne({ slug }).exec();
+
+    if (existingSlug)
+      throw createHttpError(
+        409,
+        "Slug already taken, Please choose a different slug"
+      );
+
     const blogPostId = new mongoose.Types.ObjectId();
 
     const featuredImageDestinationPath = `/uploads/featured-images/${blogPostId}.png`;
@@ -63,7 +72,8 @@ export const getBlogPostBySlug: RequestHandler = async (req, res, next) => {
       slug: req.params.slug,
     }).exec();
 
-    if (!blogPost) res.sendStatus(404);
+    if (!blogPost)
+      throw createHttpError(404, "No blog post found for this slug");
 
     res.status(200).json(blogPost);
   } catch (error) {
