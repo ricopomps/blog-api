@@ -5,6 +5,8 @@ import requiresAuth from "../middlewares/requiresAuth";
 import validateRequestSchema from "../middlewares/validateRequestSchema";
 import { signUpSchema, updateUserSchema } from "../validation/users";
 import { profilePicUpload } from "../middlewares/image-upload";
+import env from "../env";
+import setSessionReturnTo from "../middlewares/setSessionReturnTo";
 
 const router = express.Router();
 
@@ -24,6 +26,32 @@ router.post(
   "/signup",
   validateRequestSchema(signUpSchema),
   UsersController.signUp
+);
+
+router.get(
+  "/login/google",
+  setSessionReturnTo,
+  passport.authenticate("google")
+);
+router.get(
+  "/oauth2/redirect/google",
+  passport.authenticate("google", {
+    successReturnToOrRedirect: env.FRONT_URL,
+    keepSessionInfo: true,
+  })
+);
+
+router.get(
+  "/login/github",
+  setSessionReturnTo,
+  passport.authenticate("github")
+);
+router.get(
+  "/oauth2/redirect/github",
+  passport.authenticate("github", {
+    successReturnToOrRedirect: env.FRONT_URL,
+    keepSessionInfo: true,
+  })
 );
 
 router.post("/logout", UsersController.logOut);
