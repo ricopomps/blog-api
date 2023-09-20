@@ -5,7 +5,14 @@ import mongoose from "mongoose";
 import sharp from "sharp";
 import env from "../env";
 import createHttpError from "http-errors";
-import { BlogPostBody, GetBlogPostsQuery } from "../validation/blogPosts";
+import {
+  BlogPostBody,
+  DeleteBlogPostParams,
+  GetBlogPostsQuery,
+  UpodateBlogPostParams,
+} from "../validation/blogPosts";
+import fs from "fs";
+import axios from "axios";
 
 export const getBlogPosts: RequestHandler<
   unknown,
@@ -109,6 +116,101 @@ export const getAllBlogPostsSlugs: RequestHandler = async (req, res, next) => {
     const results = await BlogPostModel.find().select("slug").exec();
     const slugs = results.map((post) => post.slug);
     res.status(200).json(slugs);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateBlogPost: RequestHandler<
+  UpodateBlogPostParams,
+  unknown,
+  BlogPostBody,
+  unknown
+> = async (req, res, next) => {
+  const { blogPostId } = req.params;
+  const { slug, title, summary, body } = req.body;
+  const featuredImage = req.file;
+  const authenticatedUser = req.user;
+  try {
+    assertIsDefined(authenticatedUser);
+
+    const existingSlug = await BlogPostModel.findOne({ slug }).exec();
+
+    if (existingSlug && !existingSlug._id.equals(blogPostId))
+      throw createHttpError(
+        409,
+        "Slug already taken, Please choose a different slug"
+      );
+
+    const postToEdit = await BlogPostModel.findById(blogPostId).exec();
+    if (!postToEdit) throw createHttpError(404);
+
+    if (!postToEdit.author.equals(authenticatedUser._id)) {
+      throw createHttpError(401);
+    }
+
+    postToEdit.slug = slug;
+    postToEdit.title = title;
+    postToEdit.summary = summary;
+    postToEdit.body = body;
+
+    if (featuredImage) {
+      const featuredImageDestinationPath = `/uploads/featured-images/${blogPostId}.png`;
+
+      await sharp(featuredImage.buffer)
+        .resize(700, 450)
+        .toFile(`./${featuredImageDestinationPath}`);
+
+      postToEdit.featuredImageUrl = `${env.SERVER_URL}${featuredImageDestinationPath}?lastupdated${Date.now}`;
+    }
+
+    await postToEdit.save();
+
+    await axios.get(
+      `${env.FRONT_URL}/api/revalidate-post/${slug}?secret=${env.POST_REVALIDATION_KEY}`
+    );
+
+    res.sendStatus(200);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteBlogPost: RequestHandler<
+  DeleteBlogPostParams,
+  unknown,
+  unknown,
+  unknown
+> = async (req, res, next) => {
+  const { blogPostId } = req.params;
+  const authenticatedUser = req.user;
+
+  try {
+    assertIsDefined(authenticatedUser);
+
+    const postToDelete = await BlogPostModel.findById(blogPostId).exec();
+
+    if (!postToDelete) throw createHttpError(404);
+
+    if (!postToDelete.author.equals(authenticatedUser._id)) {
+      throw createHttpError(401);
+    }
+
+    if (postToDelete.featuredImageUrl.startsWith(env.SERVER_URL)) {
+      const imagePath = postToDelete.featuredImageUrl
+        .split(env.SERVER_URL)[1]
+        .split("?")[0];
+
+      fs.unlinkSync(`.${imagePath}`); //check how to make sure both file and post were deleted
+    }
+
+    await postToDelete.deleteOne();
+
+    await axios.get(
+      `${env.FRONT_URL}/api/revalidate-post/${postToDelete.slug}?secret=${env.POST_REVALIDATION_KEY}`
+    );
+
+    res.sendStatus(204);
   } catch (error) {
     next(error);
   }
