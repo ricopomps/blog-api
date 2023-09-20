@@ -1,12 +1,16 @@
 import express from "express";
-import * as UsersController from "../controllers/user";
 import passport from "passport";
-import requiresAuth from "../middlewares/requiresAuth";
-import validateRequestSchema from "../middlewares/validateRequestSchema";
-import { signUpSchema, updateUserSchema } from "../validation/users";
-import { profilePicUpload } from "../middlewares/image-upload";
+import * as UsersController from "../controllers/user";
 import env from "../env";
+import { profilePicUpload } from "../middlewares/image-upload";
+import requiresAuth from "../middlewares/requiresAuth";
 import setSessionReturnTo from "../middlewares/setSessionReturnTo";
+import validateRequestSchema from "../middlewares/validateRequestSchema";
+import {
+  requestVerificationCodeSchema,
+  signUpSchema,
+  updateUserSchema,
+} from "../validation/users";
 
 const router = express.Router();
 
@@ -26,6 +30,12 @@ router.post(
   "/signup",
   validateRequestSchema(signUpSchema),
   UsersController.signUp
+);
+
+router.post(
+  "/verificationcode",
+  validateRequestSchema(requestVerificationCodeSchema),
+  UsersController.requestEmailVerificationCode
 );
 
 router.get(

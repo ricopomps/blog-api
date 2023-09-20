@@ -11,6 +11,11 @@ const env = cleanEnv(process.env, {
   GOOGLE_CLIENT_SECRET: str(),
   GITHUB_CLIENT_ID: str(),
   GITHUB_CLIENT_SECRET: str(),
+  SMTP_PASSWORD: str(),
+  SMTP_HOST: str(),
+  SMTP_PORT: port(),
+  SMTP_USER: str(),
+  SMTP_SENDER: str(),
 });
 
 export default env;
