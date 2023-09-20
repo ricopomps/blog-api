@@ -8,6 +8,7 @@ import setSessionReturnTo from "../middlewares/setSessionReturnTo";
 import validateRequestSchema from "../middlewares/validateRequestSchema";
 import {
   requestVerificationCodeSchema,
+  resetPasswordSchema,
   signUpSchema,
   updateUserSchema,
 } from "../validation/users";
@@ -36,6 +37,18 @@ router.post(
   "/verificationcode",
   validateRequestSchema(requestVerificationCodeSchema),
   UsersController.requestEmailVerificationCode
+);
+
+router.post(
+  "/resetpasswordcode",
+  validateRequestSchema(requestVerificationCodeSchema),
+  UsersController.requestResetPasswordCode
+);
+
+router.post(
+  "/resetpassword",
+  validateRequestSchema(resetPasswordSchema),
+  UsersController.resetPassword
 );
 
 router.get(
