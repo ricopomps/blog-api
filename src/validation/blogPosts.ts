@@ -4,6 +4,7 @@ import { imageFileSchema, objectIdSchema } from "../utils/validations";
 export const getBlogPostSchema = yup.object({
   query: yup.object({
     authorId: objectIdSchema,
+    page: yup.string(),
   }),
 });
 

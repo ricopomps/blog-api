@@ -14,16 +14,29 @@ export const getBlogPosts: RequestHandler<
   GetBlogPostsQuery
 > = async (req, res, next) => {
   const authorId = req.query.authorId;
+  const page = parseInt(req.query.page || "1");
+  const pageSize = 6;
 
   const filter = authorId ? { author: authorId } : {};
 
   try {
-    const allBlogPosts = await BlogPostModel.find(filter)
+    const getBlogPostQuery = BlogPostModel.find(filter)
       .sort({ _id: -1 })
+      .skip(pageSize * (page - 1))
+      .limit(pageSize)
       .populate("author")
       .exec();
 
-    res.status(200).json(allBlogPosts);
+    const countDocumentsQuery = BlogPostModel.countDocuments(filter).exec();
+
+    const [blogPosts, totalResults] = await Promise.all([
+      getBlogPostQuery,
+      countDocumentsQuery,
+    ]);
+
+    const totalPages = Math.ceil(totalResults / pageSize);
+
+    res.status(200).json({ blogPosts, page, totalPages });
   } catch (error) {
     next(error);
   }
