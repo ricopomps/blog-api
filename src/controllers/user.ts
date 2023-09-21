@@ -5,8 +5,10 @@ import createHttpError from "http-errors";
 import sharp from "sharp";
 import env from "../env";
 import EmailVerificationToken from "../models/emailVerificationToken";
+import PasswordResetToken from "../models/passwordResetToken";
 import UserModel from "../models/user";
 import assertIsDefined from "../utils/assertIsDefined";
+import { destroyAllActiveSesionsForUser } from "../utils/auth";
 import * as Email from "../utils/email";
 import {
   ResetPasswordBody,
@@ -14,8 +16,6 @@ import {
   UpdateUserBody,
   requestVerificationCodeBody,
 } from "../validation/users";
-import PasswordResetToken from "../models/passwordResetToken";
-import { destroyAllActiveSesionsForUser } from "../utils/auth";
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
   const authenticatedUser = req.user;
