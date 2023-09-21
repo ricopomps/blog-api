@@ -131,4 +131,6 @@ dist
 
 # Static folders
 
-uploads/*
+uploads/featured-images/*.png
+uploads/in-post-images/*.png
+uploads/profile-pictures/*.png
