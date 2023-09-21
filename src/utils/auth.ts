@@ -22,6 +22,6 @@ async function destroyAllActiveSesionsForUserRedis(userId: string) {
 }
 
 export const destroyAllActiveSesionsForUser =
-  env.NODE_ENV === "production"
+  env.NODE_ENV === "false"
     ? destroyAllActiveSesionsForUserRedis
     : destroyAllActiveSesionsForUserMongo;

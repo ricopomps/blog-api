@@ -6,7 +6,7 @@ import env from "../env";
 import redisClient from "./redisClient";
 
 const store =
-  env.NODE_ENV === "production"
+  env.NODE_ENV === "false"
     ? new ReddisStore({ client: redisClient })
     : MongoStore.create({ mongoUrl: env.MONGO_CONNECTION_STRING });
 
