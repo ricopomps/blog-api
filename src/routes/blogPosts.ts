@@ -1,6 +1,13 @@
 import express from "express";
 import * as BlogPostsController from "../controllers/blogPosts";
-import { featuredImageUpload } from "../middlewares/image-upload";
+import {
+  featuredImageUpload,
+  inPostImageUpload,
+} from "../middlewares/image-upload";
+import {
+  createPostRateLimit,
+  updatePostRateLimit,
+} from "../middlewares/rateLimit";
 import requiresAuth from "../middlewares/requiresAuth";
 import validateRequestSchema from "../middlewares/validateRequestSchema";
 import {
@@ -8,11 +15,8 @@ import {
   deleteBlogPostSchema,
   getBlogPostsSchema,
   updateBlogPostSchema,
+  uploadInPostImageSchema,
 } from "../validation/blogPosts";
-import {
-  createPostRateLimit,
-  updatePostRateLimit,
-} from "../middlewares/rateLimit";
 
 const router = express.Router();
 
@@ -49,6 +53,15 @@ router.delete(
   requiresAuth,
   validateRequestSchema(deleteBlogPostSchema),
   BlogPostsController.deleteBlogPost
+);
+
+router.post(
+  "/images",
+  requiresAuth,
+  updatePostRateLimit,
+  inPostImageUpload.single("inPostImage"),
+  validateRequestSchema(uploadInPostImageSchema),
+  BlogPostsController.uploadInPostImage
 );
 
 export default router;

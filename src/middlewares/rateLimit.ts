@@ -39,3 +39,11 @@ export const commentPostRateLimit = rateLimit({
   legacyHeaders: false,
   skipFailedRequests: true,
 });
+
+export const uploadImageRateLimit = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 h
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipFailedRequests: true,
+});

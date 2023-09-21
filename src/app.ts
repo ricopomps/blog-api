@@ -35,6 +35,7 @@ app.use(
   "/uploads/profile-pictures",
   express.static("uploads/profile-pictures")
 );
+app.use("/uploads/in-post-images", express.static("uploads/in-post-images"));
 
 app.use("/posts", blogPostRoutes);
 app.use("/users", userRoutes);

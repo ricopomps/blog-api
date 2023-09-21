@@ -1,18 +1,20 @@
+import axios from "axios";
+import crypto from "crypto";
 import { RequestHandler } from "express";
-import BlogPostModel from "../models/blogPost";
-import assertIsDefined from "../utils/assertIsDefined";
+import fs from "fs";
+import createHttpError from "http-errors";
 import mongoose from "mongoose";
+import path from "path";
 import sharp from "sharp";
 import env from "../env";
-import createHttpError from "http-errors";
+import BlogPostModel from "../models/blogPost";
+import assertIsDefined from "../utils/assertIsDefined";
 import {
   BlogPostBody,
   DeleteBlogPostParams,
   GetBlogPostsQuery,
   UpodateBlogPostParams,
 } from "../validation/blogPosts";
-import fs from "fs";
-import axios from "axios";
 
 export const getBlogPosts: RequestHandler<
   unknown,
@@ -211,6 +213,32 @@ export const deleteBlogPost: RequestHandler<
     );
 
     res.sendStatus(204);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadInPostImage: RequestHandler = async (req, res, next) => {
+  const image = req.file;
+
+  try {
+    assertIsDefined(image);
+
+    const fileName = crypto.randomBytes(20).toString("hex");
+
+    const imageDestinationPath = `/uploads/in-post-images/${fileName}${path.extname(
+      image.originalname
+    )}`;
+
+    await sharp(image.buffer)
+      .resize(1920, undefined, {
+        withoutEnlargement: true,
+      })
+      .toFile(`./${imageDestinationPath}`);
+
+    res
+      .status(201)
+      .json({ imageUrl: `${env.SERVER_URL}${imageDestinationPath}` });
   } catch (error) {
     next(error);
   }
