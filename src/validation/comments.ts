@@ -17,6 +17,23 @@ export type GetCommentsParams = yup.InferType<
 
 export type GetCommentsQuery = yup.InferType<typeof getCommentsSchema>["query"];
 
+export const getCommentsRepliesSchema = yup.object({
+  params: yup.object({
+    commentId: objectIdSchema.required(),
+  }),
+  query: yup.object({
+    continueAfterId: objectIdSchema,
+  }),
+});
+
+export type GetCommentsRepliesParams = yup.InferType<
+  typeof getCommentsRepliesSchema
+>["params"];
+
+export type GetCommentsRepliesQuery = yup.InferType<
+  typeof getCommentsRepliesSchema
+>["query"];
+
 export const createCommentSchema = yup.object({
   body: yup.object({
     text: commentTextSchema,
@@ -34,3 +51,29 @@ export type CreateCommentParams = yup.InferType<
 export type CreateCommentBody = yup.InferType<
   typeof createCommentSchema
 >["body"];
+
+export const updateCommentSchema = yup.object({
+  body: yup.object({
+    newText: commentTextSchema,
+  }),
+  params: yup.object({
+    commentId: objectIdSchema.required(),
+  }),
+});
+
+export type UpdateCommentBody = yup.InferType<
+  typeof updateCommentSchema
+>["body"];
+export type UpdateCommentParams = yup.InferType<
+  typeof updateCommentSchema
+>["params"];
+
+export const deleteCommentSchema = yup.object({
+  params: yup.object({
+    commentId: objectIdSchema.required(),
+  }),
+});
+
+export type DeleteCommentParams = yup.InferType<
+  typeof deleteCommentSchema
+>["params"];
