@@ -1,16 +1,17 @@
+import cors from "cors";
 import "dotenv/config";
 import express from "express";
-import blogPostRoutes from "./routes/blogPosts";
-import userRoutes from "./routes/users";
-import cors from "cors";
-import env from "./env";
-import morgan from "morgan";
-import errorHandler from "./middlewares/errorHandler";
-import createHttpError from "http-errors";
 import session from "express-session";
-import sessionConfig from "./config/session";
+import createHttpError from "http-errors";
+import morgan from "morgan";
 import passport from "passport";
 import "./config/passport";
+import sessionConfig from "./config/session";
+import env from "./env";
+import errorHandler from "./middlewares/errorHandler";
+import blogPostRoutes from "./routes/blogPosts";
+import commentRoutes from "./routes/comments";
+import userRoutes from "./routes/users";
 
 const app = express();
 
@@ -37,6 +38,7 @@ app.use(
 
 app.use("/posts", blogPostRoutes);
 app.use("/users", userRoutes);
+app.use("/comments", commentRoutes);
 
 app.use((req, res, next) => next(createHttpError(404, "Endpoint not found")));
 
