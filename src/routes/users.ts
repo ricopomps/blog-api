@@ -3,6 +3,7 @@ import passport from "passport";
 import * as UsersController from "../controllers/user";
 import env from "../env";
 import { profilePicUpload } from "../middlewares/image-upload";
+import {} from "../middlewares/rateLimit";
 import requiresAuth from "../middlewares/requiresAuth";
 import setSessionReturnTo from "../middlewares/setSessionReturnTo";
 import validateRequestSchema from "../middlewares/validateRequestSchema";
@@ -12,10 +13,6 @@ import {
   signUpSchema,
   updateUserSchema,
 } from "../validation/users";
-import {
-  loginRateLimit,
-  requestVerificationCodeRateLimit,
-} from "../middlewares/rateLimit";
 
 const router = express.Router();
 
@@ -39,14 +36,14 @@ router.post(
 
 router.post(
   "/verificationcode",
-  requestVerificationCodeRateLimit,
+  //   requestVerificationCodeRateLimit,
   validateRequestSchema(requestVerificationCodeSchema),
   UsersController.requestEmailVerificationCode
 );
 
 router.post(
   "/resetpasswordcode",
-  requestVerificationCodeRateLimit,
+  //   requestVerificationCodeRateLimit,
   validateRequestSchema(requestVerificationCodeSchema),
   UsersController.requestResetPasswordCode
 );
@@ -87,7 +84,7 @@ router.post("/logout", UsersController.logOut);
 
 router.post(
   "/login",
-  loginRateLimit,
+  //   loginRateLimit,
   passport.authenticate("local"),
   (req, res) => res.status(200).json(req.user)
 );
