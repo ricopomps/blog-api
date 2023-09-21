@@ -58,7 +58,7 @@ router.delete(
 router.post(
   "/images",
   requiresAuth,
-  updatePostRateLimit,
+  //   updatePostRateLimit,
   inPostImageUpload.single("inPostImage"),
   validateRequestSchema(uploadInPostImageSchema),
   BlogPostsController.uploadInPostImage
