@@ -4,7 +4,11 @@ import {
   featuredImageUpload,
   inPostImageUpload,
 } from "../middlewares/image-upload";
-import { updatePostRateLimit } from "../middlewares/rateLimit";
+import {
+  createPostRateLimit,
+  updatePostRateLimit,
+  uploadImageRateLimit,
+} from "../middlewares/rateLimit";
 import requiresAuth from "../middlewares/requiresAuth";
 import validateRequestSchema from "../middlewares/validateRequestSchema";
 import {
@@ -30,7 +34,7 @@ router.get("/post/:slug", BlogPostsController.getBlogPostBySlug);
 router.post(
   "/",
   requiresAuth,
-  //   createPostRateLimit,
+  createPostRateLimit,
   featuredImageUpload.single("featuredImage"),
   validateRequestSchema(createBlogPostSchema),
   BlogPostsController.createBlogPost
@@ -55,7 +59,7 @@ router.delete(
 router.post(
   "/images",
   requiresAuth,
-  //   updatePostRateLimit,
+  uploadImageRateLimit,
   inPostImageUpload.single("inPostImage"),
   validateRequestSchema(uploadInPostImageSchema),
   BlogPostsController.uploadInPostImage

@@ -15,7 +15,12 @@ import userRoutes from "./routes/users";
 
 const app = express();
 
-app.use(morgan("dev"));
+if (env.NODE_ENV === "production") {
+  app.set("trust proxy", true);
+  app.use(morgan("combined"));
+} else {
+  app.use(morgan("dev"));
+}
 
 app.use(express.json());
 
