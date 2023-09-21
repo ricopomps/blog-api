@@ -9,6 +9,10 @@ import {
   getBlogPostsSchema,
   updateBlogPostSchema,
 } from "../validation/blogPosts";
+import {
+  createPostRateLimit,
+  updatePostRateLimit,
+} from "../middlewares/rateLimit";
 
 const router = express.Router();
 
@@ -25,6 +29,7 @@ router.get("/post/:slug", BlogPostsController.getBlogPostBySlug);
 router.post(
   "/",
   requiresAuth,
+  createPostRateLimit,
   featuredImageUpload.single("featuredImage"),
   validateRequestSchema(createBlogPostSchema),
   BlogPostsController.createBlogPost
@@ -33,6 +38,7 @@ router.post(
 router.patch(
   "/:blogPostId",
   requiresAuth,
+  updatePostRateLimit,
   featuredImageUpload.single("featuredImage"),
   validateRequestSchema(updateBlogPostSchema),
   BlogPostsController.updateBlogPost

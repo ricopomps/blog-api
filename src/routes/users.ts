@@ -12,6 +12,10 @@ import {
   signUpSchema,
   updateUserSchema,
 } from "../validation/users";
+import {
+  loginRateLimit,
+  requestVerificationCodeRateLimit,
+} from "../middlewares/rateLimit";
 
 const router = express.Router();
 
@@ -35,12 +39,14 @@ router.post(
 
 router.post(
   "/verificationcode",
+  requestVerificationCodeRateLimit,
   validateRequestSchema(requestVerificationCodeSchema),
   UsersController.requestEmailVerificationCode
 );
 
 router.post(
   "/resetpasswordcode",
+  requestVerificationCodeRateLimit,
   validateRequestSchema(requestVerificationCodeSchema),
   UsersController.requestResetPasswordCode
 );
@@ -79,8 +85,11 @@ router.get(
 
 router.post("/logout", UsersController.logOut);
 
-router.post("/login", passport.authenticate("local"), (req, res) =>
-  res.status(200).json(req.user)
+router.post(
+  "/login",
+  loginRateLimit,
+  passport.authenticate("local"),
+  (req, res) => res.status(200).json(req.user)
 );
 
 export default router;
