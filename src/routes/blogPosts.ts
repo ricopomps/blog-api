@@ -4,10 +4,7 @@ import {
   featuredImageUpload,
   inPostImageUpload,
 } from "../middlewares/image-upload";
-import {
-  createPostRateLimit,
-  updatePostRateLimit,
-} from "../middlewares/rateLimit";
+import { updatePostRateLimit } from "../middlewares/rateLimit";
 import requiresAuth from "../middlewares/requiresAuth";
 import validateRequestSchema from "../middlewares/validateRequestSchema";
 import {
@@ -33,7 +30,7 @@ router.get("/post/:slug", BlogPostsController.getBlogPostBySlug);
 router.post(
   "/",
   requiresAuth,
-  createPostRateLimit,
+  //   createPostRateLimit,
   featuredImageUpload.single("featuredImage"),
   validateRequestSchema(createBlogPostSchema),
   BlogPostsController.createBlogPost
