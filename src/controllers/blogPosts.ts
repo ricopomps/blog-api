@@ -1,14 +1,10 @@
-import { put } from "@vercel/blob";
 import axios from "axios";
-import crypto from "crypto";
 import { RequestHandler } from "express";
-import fs from "fs";
 import createHttpError from "http-errors";
 import mongoose from "mongoose";
-import path from "path";
-import sharp from "sharp";
 import env from "../env";
 import BlogPostModel from "../models/blogPost";
+import FileService, { IFileService } from "../services/FileService";
 import assertIsDefined from "../utils/assertIsDefined";
 import {
   BlogPostBody,
@@ -16,6 +12,8 @@ import {
   GetBlogPostsQuery,
   UpodateBlogPostParams,
 } from "../validation/blogPosts";
+
+const fileService: IFileService = new FileService();
 
 export const getBlogPosts: RequestHandler<
   unknown,
@@ -75,15 +73,7 @@ export const createBlogPost: RequestHandler<
 
     const blogPostId = new mongoose.Types.ObjectId();
 
-    const buffer = await sharp(featuredImage.buffer)
-      .resize(700, 450)
-      .toBuffer();
-
-    const { url: featuredImageDestinationPath } = await put(
-      `${blogPostId}.png`,
-      buffer,
-      { access: "public", addRandomSuffix: false }
-    );
+    const file = await fileService.saveFeaturedImage(featuredImage, blogPostId);
 
     const newPost = await BlogPostModel.create({
       _id: blogPostId,
@@ -91,7 +81,7 @@ export const createBlogPost: RequestHandler<
       slug,
       summary,
       title,
-      featuredImageUrl: featuredImageDestinationPath,
+      featuredImageUrl: file.url,
       author: authenticatedUser._id,
     });
 
@@ -162,13 +152,12 @@ export const updateBlogPost: RequestHandler<
     postToEdit.body = body;
 
     if (featuredImage) {
-      const featuredImageDestinationPath = `/uploads/featured-images/${blogPostId}.png`;
+      const { url: imageUrl } = await fileService.saveFeaturedImage(
+        featuredImage,
+        postToEdit._id
+      );
 
-      await sharp(featuredImage.buffer)
-        .resize(700, 450)
-        .toFile(`./${featuredImageDestinationPath}`);
-
-      postToEdit.featuredImageUrl = `${env.SERVER_URL}${featuredImageDestinationPath}?lastupdated${Date.now}`;
+      postToEdit.featuredImageUrl = `${imageUrl}?lastupdated${Date.now}`;
     }
 
     await postToEdit.save();
@@ -203,13 +192,7 @@ export const deleteBlogPost: RequestHandler<
       throw createHttpError(401);
     }
 
-    if (postToDelete.featuredImageUrl.startsWith(env.SERVER_URL)) {
-      const imagePath = postToDelete.featuredImageUrl
-        .split(env.SERVER_URL)[1]
-        .split("?")[0];
-
-      fs.unlinkSync(`.${imagePath}`); //check how to make sure both file and post were deleted
-    }
+    await fileService.removeFile(postToDelete.featuredImageUrl);
 
     await postToDelete.deleteOne();
 
@@ -229,21 +212,9 @@ export const uploadInPostImage: RequestHandler = async (req, res, next) => {
   try {
     assertIsDefined(image);
 
-    const fileName = crypto.randomBytes(20).toString("hex");
+    const { url: imageUrl } = await fileService.saveInPostImage(image);
 
-    const imageDestinationPath = `/uploads/in-post-images/${fileName}${path.extname(
-      image.originalname
-    )}`;
-
-    await sharp(image.buffer)
-      .resize(1920, undefined, {
-        withoutEnlargement: true,
-      })
-      .toFile(`./${imageDestinationPath}`);
-
-    res
-      .status(201)
-      .json({ imageUrl: `${env.SERVER_URL}${imageDestinationPath}` });
+    res.status(201).json({ imageUrl });
   } catch (error) {
     next(error);
   }

@@ -2,11 +2,10 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { RequestHandler } from "express";
 import createHttpError from "http-errors";
-import sharp from "sharp";
-import env from "../env";
 import EmailVerificationToken from "../models/emailVerificationToken";
 import PasswordResetToken from "../models/passwordResetToken";
 import UserModel from "../models/user";
+import FileService, { IFileService } from "../services/FileService";
 import assertIsDefined from "../utils/assertIsDefined";
 import { destroyAllActiveSesionsForUser } from "../utils/auth";
 import * as Email from "../utils/email";
@@ -16,6 +15,8 @@ import {
   UpdateUserBody,
   requestVerificationCodeBody,
 } from "../validation/users";
+
+const fileService: IFileService = new FileService();
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
   const authenticatedUser = req.user;
@@ -125,15 +126,13 @@ export const updateUser: RequestHandler<
     }
 
     let profilePicDestinationPath: string | undefined = undefined;
-    console.log("profilePic", profilePic);
-    if (profilePic) {
-      profilePicDestinationPath = `/uploads/profile-pictures/${authenticatedUser._id}.png`;
 
-      await sharp(profilePic.buffer)
-        .resize(500, 500, {
-          withoutEnlargement: true,
-        })
-        .toFile(`./${profilePicDestinationPath}`);
+    if (profilePic) {
+      const { url } = await fileService.saveProfilePic(
+        profilePic,
+        authenticatedUser._id
+      );
+      profilePicDestinationPath = url;
     }
 
     const updatedUser = await UserModel.findByIdAndUpdate(
@@ -144,9 +143,7 @@ export const updateUser: RequestHandler<
           ...(displayName && { displayName }),
           ...(about && { about }),
           ...(profilePic && {
-            profilePicUrl: `${
-              env.SERVER_URL
-            }${profilePicDestinationPath}?lastupdated=${Date.now()}`,
+            profilePicUrl: `${profilePicDestinationPath}?lastupdated=${Date.now()}`,
           }),
         },
       },

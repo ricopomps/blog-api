@@ -128,9 +128,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-# Static folders
-
-uploads/featured-images/*.png
-uploads/in-post-images/*.png
-uploads/profile-pictures/*.png
