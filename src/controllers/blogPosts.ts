@@ -1,3 +1,4 @@
+import { put } from "@vercel/blob";
 import axios from "axios";
 import crypto from "crypto";
 import { RequestHandler } from "express";
@@ -74,11 +75,15 @@ export const createBlogPost: RequestHandler<
 
     const blogPostId = new mongoose.Types.ObjectId();
 
-    const featuredImageDestinationPath = `/uploads/featured-images/${blogPostId}.png`;
-
-    await sharp(featuredImage.buffer)
+    const buffer = await sharp(featuredImage.buffer)
       .resize(700, 450)
-      .toFile(`./${featuredImageDestinationPath}`);
+      .toBuffer();
+
+    const { url: featuredImageDestinationPath } = await put(
+      `${blogPostId}.png`,
+      buffer,
+      { access: "public", addRandomSuffix: false }
+    );
 
     const newPost = await BlogPostModel.create({
       _id: blogPostId,
@@ -86,7 +91,7 @@ export const createBlogPost: RequestHandler<
       slug,
       summary,
       title,
-      featuredImageUrl: `${env.SERVER_URL}${featuredImageDestinationPath}`,
+      featuredImageUrl: featuredImageDestinationPath,
       author: authenticatedUser._id,
     });
 

@@ -17,6 +17,7 @@ const env = cleanEnv(process.env, {
   SMTP_PORT: port(),
   SMTP_USER: str(),
   SMTP_SENDER: str(),
+  BLOB_READ_WRITE_TOKEN: str(),
 });
 
 export default env;
