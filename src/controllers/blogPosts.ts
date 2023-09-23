@@ -4,7 +4,7 @@ import createHttpError from "http-errors";
 import mongoose from "mongoose";
 import env from "../env";
 import BlogPostModel from "../models/blogPost";
-import FileService, { IFileService } from "../services/FileService";
+import FileService, { IFileService } from "../services/file";
 import assertIsDefined from "../utils/assertIsDefined";
 import {
   BlogPostBody,

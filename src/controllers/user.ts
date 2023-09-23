@@ -5,7 +5,8 @@ import createHttpError from "http-errors";
 import EmailVerificationToken from "../models/emailVerificationToken";
 import PasswordResetToken from "../models/passwordResetToken";
 import UserModel from "../models/user";
-import FileService, { IFileService } from "../services/FileService";
+import FileService, { IFileService } from "../services/file";
+import UserService, { IUserService } from "../services/user";
 import assertIsDefined from "../utils/assertIsDefined";
 import { destroyAllActiveSesionsForUser } from "../utils/auth";
 import * as Email from "../utils/email";
@@ -17,15 +18,14 @@ import {
 } from "../validation/users";
 
 const fileService: IFileService = new FileService();
+const userService: IUserService = new UserService();
 
 export const getAuthenticatedUser: RequestHandler = async (req, res, next) => {
   const authenticatedUser = req.user;
   try {
     assertIsDefined(authenticatedUser);
 
-    const user = await UserModel.findById(authenticatedUser._id)
-      .select("+email")
-      .exec();
+    const user = await userService.getAuthenticatedUser(authenticatedUser._id);
 
     res.status(200).json(user);
   } catch (error) {
