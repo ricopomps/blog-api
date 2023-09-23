@@ -1,17 +1,26 @@
 import createHttpError from "http-errors";
 import mongoose from "mongoose";
 import UserModel, { User } from "../models/user";
+import { UpdateUserBody } from "../validation/users";
 
 export interface IUserRepository {
   findUserById(
     userId: mongoose.Types.ObjectId,
     extraFields?: string
   ): Promise<User>;
+
   findUserByUsername(username: string): Promise<User | null>;
+
   createUser(
     username: string,
     email: string,
     passwordHashed: string
+  ): Promise<User>;
+
+  updateUser(
+    userId: mongoose.Types.ObjectId,
+    { username, displayName, about }: UpdateUserBody,
+    profilePicDestinationPath?: string
   ): Promise<User>;
 }
 
@@ -49,5 +58,28 @@ export default class UserRepository implements IUserRepository {
     delete userWithoutPassword.password;
 
     return userWithoutPassword;
+  }
+
+  async updateUser(
+    userId: mongoose.Types.ObjectId,
+    { username, displayName, about }: UpdateUserBody,
+    profilePicDestinationPath?: string
+  ): Promise<User> {
+    const updatedUser = await UserModel.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          ...(username && { username }),
+          ...(displayName && { displayName }),
+          ...(about && { about }),
+          ...(profilePicDestinationPath && {
+            profilePicUrl: `${profilePicDestinationPath}?lastupdated=${Date.now()}`,
+          }),
+        },
+      },
+      { new: true }
+    ).exec();
+
+    return updatedUser as User;
   }
 }

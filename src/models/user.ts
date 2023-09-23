@@ -1,4 +1,4 @@
-import { InferSchemaType, Schema, model } from "mongoose";
+import mongoose, { InferSchemaType, Schema, model } from "mongoose";
 
 const userSchema = new Schema(
   {
@@ -21,6 +21,8 @@ userSchema.pre("validate", function (next) {
   next();
 });
 
-export type User = InferSchemaType<typeof userSchema>;
+export type User = InferSchemaType<typeof userSchema> & {
+  _id: mongoose.Types.ObjectId;
+};
 
 export default model<User>("User", userSchema);

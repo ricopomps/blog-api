@@ -41,36 +41,12 @@ export const signUp: RequestHandler<
 > = async (req, res, next) => {
   const { username, email, password: passwordRaw, verificationCode } = req.body;
   try {
-    const existingUsername = await UserModel.findOne({ username })
-      .collation({
-        locale: "en",
-        strength: 2,
-      })
-      .exec();
-
-    if (existingUsername) throw createHttpError(409, "Username already taken");
-
-    const emailVerificationToken = await EmailVerificationToken.findOne({
-      email,
-      verificationCode,
-    }).exec();
-
-    if (!emailVerificationToken)
-      throw createHttpError(400, "Verification code incorrect or expired.");
-    else await emailVerificationToken.deleteOne();
-
-    const passwordHashed = await bcrypt.hash(passwordRaw, 10);
-
-    const result = await UserModel.create({
+    const newUser = await userService.signUp({
       username,
-      displayName: username,
       email,
-      password: passwordHashed,
+      password: passwordRaw,
+      verificationCode,
     });
-
-    const newUser = result.toObject();
-
-    delete newUser.password;
 
     req.logIn(newUser, (error) => {
       if (error) throw error;
@@ -91,7 +67,7 @@ export const logOut: RequestHandler = (req, res) => {
 export const getUserByUsername: RequestHandler = async (req, res, next) => {
   try {
     const { username } = req.params;
-    const user = await UserModel.findOne({ username }).exec();
+    const user = await userService.findUserByUsername(username);
 
     if (!user) throw createHttpError(404, "User not found");
 
@@ -113,42 +89,11 @@ export const updateUser: RequestHandler<
   try {
     assertIsDefined(authenticatedUser);
 
-    if (username) {
-      const existingUsername = await UserModel.findOne({ username })
-        .collation({
-          locale: "en",
-          strength: 2,
-        })
-        .exec();
-
-      if (existingUsername)
-        throw createHttpError(409, "Username already taken");
-    }
-
-    let profilePicDestinationPath: string | undefined = undefined;
-
-    if (profilePic) {
-      const { url } = await fileService.saveProfilePic(
-        profilePic,
-        authenticatedUser._id
-      );
-      profilePicDestinationPath = url;
-    }
-
-    const updatedUser = await UserModel.findByIdAndUpdate(
+    const updatedUser = await userService.updateUser(
       authenticatedUser._id,
-      {
-        $set: {
-          ...(username && { username }),
-          ...(displayName && { displayName }),
-          ...(about && { about }),
-          ...(profilePic && {
-            profilePicUrl: `${profilePicDestinationPath}?lastupdated=${Date.now()}`,
-          }),
-        },
-      },
-      { new: true }
-    ).exec();
+      { username, displayName, about },
+      profilePic
+    );
 
     res.status(200).json(updatedUser);
   } catch (error) {
